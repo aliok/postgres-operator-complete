@@ -1,12 +1,12 @@
 Prework:
 
+minikube start
 minikube ssh
-docker pull docker.io/centos/postgresql-96-centos7:9.6
 docker pull aliok/postgres-operator
 docker pull postgres:9.6
 exit
-minikube dashboard
 rm -rf $HOME/go/src/github.com/aliok/postgres-operator
+minikube dashboard
 
 =======================================
 
@@ -158,7 +158,6 @@ sed -i 's|REPLACE_IMAGE|aliok/postgres-operator|g' deploy/operator.yaml
 kubectl create -f deploy/service_account.yaml
 kubectl create -f deploy/role.yaml
 kubectl create -f deploy/role_binding.yaml
-kubectl create -f deploy/crds/app.example.com_appservices_crd.yaml
 kubectl create -f deploy/operator.yaml
 
 ==========================================
@@ -177,7 +176,4 @@ kubectl create -f deploy/operator.yaml
 # 2. Run out of the cluster
 # 3. Set a breakpoint
 
-
-=========================
-
-operator-sdk generate k8s
+WATCH_NAMESPACE default
