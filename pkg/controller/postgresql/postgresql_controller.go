@@ -51,7 +51,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for changes to secondary resource Deployment and requeue the owner UnifiedPushServer
+	// Watch for changes to secondary resource Deployment and requeue the owner Postgresql
 	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
 		OwnerType:    &examplev1alpha1.Postgresql{},
