@@ -108,7 +108,7 @@ func (r *ReconcilePostgresql) Reconcile(request reconcile.Request) (reconcile.Re
 
 	// Check if this Deployment already exists
 	foundPostgresqlDeployment := &appsv1.Deployment{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: postgresqlDeployment.Name, Namespace: postgresqlDeployment.Namespace}, foundPostgresqlDeployment)
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: instance.Name + "-deployment", Namespace: instance.Name}, foundPostgresqlDeployment)
 	if err != nil && errors.IsNotFound(err) {
 		reqLogger.Info("Creating a new Deployment", "Deployment.Namespace", postgresqlDeployment.Namespace, "Deployment.Name", postgresqlDeployment.Name)
 		err = r.client.Create(context.TODO(), postgresqlDeployment)

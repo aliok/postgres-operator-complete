@@ -1,9 +1,12 @@
 Prework:
 
-minishift ssh
+minikube ssh
 docker pull docker.io/centos/postgresql-96-centos7:9.6
-docker pull aliok/ups-operator
+docker pull aliok/postgres-operator
 docker pull postgres:9.6
+exit
+minikube dashboard
+rm -rf $HOME/go/src/github.com/aliok/postgres-operator
 
 =======================================
 
