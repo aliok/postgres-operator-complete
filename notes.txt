@@ -1,3 +1,12 @@
+Prework:
+
+minishift ssh
+docker pull docker.io/centos/postgresql-96-centos7:9.6
+docker pull aliok/ups-operator
+docker pull postgres:9.6
+
+=======================================
+
 # create project
 
 # NO NEED export GOROOT=/usr/lib/golang
@@ -17,9 +26,6 @@ idea .
 
 // Instances specify the number of instances that this Postgres cluster will have
 Instances int32 `json:"instances"`
-
-// ConnectionUrl allows the database consumer to connect to Postgres cluster
-ConnectionUrl string `json:"connectionUrl"`
 
 # Regenerate yaml
 operator-sdk generate openapi
@@ -55,6 +61,13 @@ if err := appsv1.AddToScheme(mgr.GetScheme()); err != nil {
 
 controller:
 -------------
+postgresqlDeployment:= newPostgresqlDeployment(instance)
+
+// Set UnifiedPushServer instance as the owner and controller
+if err := controllerutil.SetControllerReference(instance, postgresqlDeployment, r.scheme); err != nil {
+    return reconcile.Result{}, err
+}
+
 // Check if this Deployment already exists
 foundPostgresqlDeployment := &appsv1.Deployment{}
 err = r.client.Get(context.TODO(), types.NamespacedName{Name: postgresqlDeployment.Name, Namespace: postgresqlDeployment.Namespace}, foundPostgresqlDeployment)
@@ -79,20 +92,19 @@ if err != nil && errors.IsNotFound(err) {
         return reconcile.Result{Requeue: true}, nil
     }
 }
+
+return reconcile.Result{}, nil
 -------------
 
 -------------
-func newPostgresqlDeployment(cr *examplev1alpha1.Postgresql) (*appsv1.Deployment, error) {
+func newPostgresqlDeployment(cr *examplev1alpha1.Postgresql) *appsv1.Deployment {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-deployment",
 			Namespace: cr.Namespace,
-			Labels: map[string]string{
-				"app": cr.Name,
-			},
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &cr.Spec.Instances, // HERE!
+			Replicas: &cr.Spec.Instances, 		// HERE!
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app": cr.Name,
@@ -108,35 +120,13 @@ func newPostgresqlDeployment(cr *examplev1alpha1.Postgresql) (*appsv1.Deployment
 					Containers: []corev1.Container{
 						{
 							Name:            "postgres",
-							Image:           "docker.io/centos/postgresql-96-centos7:9.6", //https://hub.docker.com/r/centos/postgresql-96-centos7/
-							ImagePullPolicy: corev1.PullAlways,
-							Env: []corev1.EnvVar{
-								{
-									Name:  "POSTGRESQL_USER",
-									Value: "foo",
-								},
-								{
-									Name:  "POSTGRESQL_PASSWORD",
-									Value: "bar",
-								},
-								{
-									Name:  "POSTGRESQL_DATABASE",
-									Value: "baz",
-								},
-							},
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "postgres",
-									Protocol:      corev1.ProtocolTCP,
-									ContainerPort: 5432,
-								},
-							},
+							Image:           "postgres:9.6",
 						},
 					},
 				},
 			},
 		},
-	}, nil
+	}
 }
 -------------
 

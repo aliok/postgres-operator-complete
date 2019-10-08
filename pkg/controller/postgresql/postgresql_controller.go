@@ -99,10 +99,7 @@ func (r *ReconcilePostgresql) Reconcile(request reconcile.Request) (reconcile.Re
 		return reconcile.Result{}, err
 	}
 
-	postgresqlDeployment, err := newPostgresqlDeployment(instance)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
+	postgresqlDeployment := newPostgresqlDeployment(instance)
 
 	// Set UnifiedPushServer instance as the owner and controller
 	if err := controllerutil.SetControllerReference(instance, postgresqlDeployment, r.scheme); err != nil {
@@ -137,14 +134,11 @@ func (r *ReconcilePostgresql) Reconcile(request reconcile.Request) (reconcile.Re
 	return reconcile.Result{}, nil
 }
 
-func newPostgresqlDeployment(cr *examplev1alpha1.Postgresql) (*appsv1.Deployment, error) {
+func newPostgresqlDeployment(cr *examplev1alpha1.Postgresql) *appsv1.Deployment {
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-deployment",
 			Namespace: cr.Namespace,
-			Labels: map[string]string{
-				"app": cr.Name,
-			},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &cr.Spec.Instances, // HERE!
@@ -162,34 +156,12 @@ func newPostgresqlDeployment(cr *examplev1alpha1.Postgresql) (*appsv1.Deployment
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name:            "postgres",
-							Image:           "docker.io/centos/postgresql-96-centos7:9.6", //https://hub.docker.com/r/centos/postgresql-96-centos7/
-							ImagePullPolicy: corev1.PullAlways,
-							Env: []corev1.EnvVar{
-								{
-									Name:  "POSTGRESQL_USER",
-									Value: "foo",
-								},
-								{
-									Name:  "POSTGRESQL_PASSWORD",
-									Value: "bar",
-								},
-								{
-									Name:  "POSTGRESQL_DATABASE",
-									Value: "baz",
-								},
-							},
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "postgres",
-									Protocol:      corev1.ProtocolTCP,
-									ContainerPort: 5432,
-								},
-							},
+							Name:  "postgres",
+							Image: "postgres:9.6",
 						},
 					},
 				},
 			},
 		},
-	}, nil
+	}
 }
