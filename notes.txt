@@ -6,6 +6,11 @@ docker pull aliok/postgres-operator
 docker pull postgres:9.6
 exit
 rm -rf $HOME/go/src/github.com/aliok/postgres-operator
+minikube dashboard
+cd $HOME/go/src/github.com/aliok/postgres-operator-complete
+kubectl apply -f deploy/crds/example_v1alpha1_postgresql_crd.yaml
+kubectl delete postgresql example-postgresql
+
 kubectl delete customresourcedefinition postgresql.example.com
 minikube dashboard
 
